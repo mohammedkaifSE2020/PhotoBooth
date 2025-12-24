@@ -1,0 +1,54 @@
+// {
+//   "extends": "./tsconfig.json",
+//   "compilerOptions": {
+//     "target": "ES2020",
+//     "module": "commonjs",
+//     "lib": ["ES2020"],
+//     "outDir": "./dist/electron",
+//     "rootDir": "."
+//   },
+//   "include": [
+//     "electron/**/*",
+//     "shared/**/*"
+//   ],
+//   "exclude": [
+//     "node_modules",
+//     "src",
+//     "dist",
+//     "release"
+//   ]
+// }
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "lib": ["ES2020"],
+
+    "rootDir": ".",
+    "outDir": "dist/",
+
+    "baseUrl": ".",
+    "paths": {
+      "@electron/*": ["electron/*"],
+      "@shared/*": ["shared/*"]
+    },
+
+    "esModuleInterop": true,
+    "sourceMap": true,
+    
+    "declaration": false,
+    "declarationMap": false,
+    "composite": false,
+  },
+  "include": [
+    "electron/**/*.ts",
+    "shared/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src",
+    "dist",
+    "release"
+  ]
+}
