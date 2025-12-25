@@ -2,7 +2,7 @@ import { getDatabase } from '../database/connection';
 import log from 'electron-log';
 import { app } from 'electron';
 import * as path from 'path';
-import { AppSettings } from '@electron/interface/AppSettings';
+import { AppSettings } from '../interface/AppSettings';
 
 
 export class SettingsService {
