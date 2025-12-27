@@ -105,8 +105,8 @@ export default function SettingsPanel() {
 
     return (
         <div>
-            <div className="h-full overflow-y-auto p-8">
-                <div className="max-w-2xl mx-auto">
+            <div className="w-full h-full overflow-y-auto">
+                <div className="max-w-2xl mx-auto p-8 pb-20">
                     <h2 className="text-3xl font-bold mb-2">Settings</h2>
                     <p className="text-gray-400 mb-8">Configure your PhotoBooth preferences</p>
 
@@ -114,8 +114,8 @@ export default function SettingsPanel() {
                     {message && (
                         <div
                             className={`mb-6 p-4 rounded-lg ${message.type === 'success'
-                                    ? 'bg-green-600 text-white'
-                                    : 'bg-red-600 text-white'
+                                ? 'bg-green-600 text-white'
+                                : 'bg-red-600 text-white'
                                 }`}
                         >
                             {message.text}

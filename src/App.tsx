@@ -75,7 +75,7 @@ function App() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-y-auto">
         {currentView === 'capture' && <CameraCapture />}
         {currentView === 'gallery' && <PhotoGallery />}
         {currentView === 'settings' && <SettingsPanel />}

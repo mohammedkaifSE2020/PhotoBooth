@@ -5,7 +5,7 @@ const electronAPI = {
   // Photo APIs
   photo: {
     save: (photoData: {
-      imageBuffer: any;
+      imageBuffer: ArrayBuffer;
       session_id?: string;
       layout_type?: string;
       metadata?: Record<string, any>;

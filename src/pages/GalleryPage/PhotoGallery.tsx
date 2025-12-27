@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 
 interface Photo {
     id: string;
-    filePath: string;
-    fileName: string;
+    filepath: string;
+    filename: string;
     height: number;
     width: number;
-    takenAt: string;
-    thumbnailPath: string;
-    fileSize: number;
+    taken_at: string;
+    thumbnail_path: string;
+    file_size: number;
 }
 
 export default function PhotoGallery() {
@@ -18,7 +18,7 @@ export default function PhotoGallery() {
 
     useEffect(() => {
         loadPhotos();
-    })
+    }, [])
 
     const loadPhotos = async () => {
         setLoading(true);
@@ -92,6 +92,25 @@ export default function PhotoGallery() {
         );
     }
 
+    const getMediaUrl = (pathValue: string | undefined) => {
+        if (!pathValue) return '';
+
+        // 1. If it's already a correctly formatted media URL, return it
+        if (pathValue.startsWith('media://local-resource/')) {
+            return pathValue;
+        }
+
+        // 2. Strip ALL existing prefixes (media://, media://media//, etc.) 
+        // to get back to the raw disk path
+        let cleanPath = pathValue
+            .replace(/^media:\/+/g, '')        // Remove media:/, media://, etc.
+            .replace(/^local-resource\//g, '') // Remove accidental host repeat
+            .replace(/\\/g, '/');              // Normalize Windows slashes
+
+        // 3. Reconstruct exactly once
+        return `media://local-resource/${cleanPath}`;
+    };
+
     return (
         <div className="h-full flex">
             {/* Photo Grid */}
@@ -120,16 +139,16 @@ export default function PhotoGallery() {
                                     `}
                         >
                             <img
-                                src={`file://${photo.thumbnailPath || photo.filePath}`}
-                                alt={photo.fileName}
+                                src={`${getMediaUrl(photo.thumbnail_path || photo.filepath)}`}
+                                alt={photo.filename}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                     // Fallback if thumbnail fails
-                                    e.currentTarget.src = `file://${photo.filePath}`;
+                                    e.currentTarget.src = `${getMediaUrl(photo.filepath)}`;
                                 }}
                             />
                             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
-                                <p className="text-xs text-white truncate">{photo.fileName}</p>
+                                <p className="text-xs text-white truncate">{photo.filename}</p>
                             </div>
                         </div>
                     ))}
@@ -141,8 +160,8 @@ export default function PhotoGallery() {
                 <div className="w-80 bg-gray-800 border-l border-gray-700 p-6 overflow-y-auto">
                     <div className="mb-4">
                         <img
-                            src={`file://${selectedPhoto.filePath}`}
-                            alt={selectedPhoto.fileName}
+                            src={`${getMediaUrl(selectedPhoto.filepath)}`}
+                            alt={selectedPhoto.filename}
                             className="w-full rounded-lg"
                         />
                     </div>
@@ -152,7 +171,7 @@ export default function PhotoGallery() {
                     <div className="space-y-3 text-sm">
                         <div>
                             <span className="text-gray-400">Filename:</span>
-                            <p className="text-white break-all">{selectedPhoto.fileName}</p>
+                            <p className="text-white break-all">{selectedPhoto.filename}</p>
                         </div>
 
                         <div>
@@ -164,17 +183,17 @@ export default function PhotoGallery() {
 
                         <div>
                             <span className="text-gray-400">File Size:</span>
-                            <p className="text-white">{formatFileSize(selectedPhoto.fileSize)}</p>
+                            <p className="text-white">{formatFileSize(selectedPhoto.file_size)}</p>
                         </div>
 
                         <div>
                             <span className="text-gray-400">Taken:</span>
-                            <p className="text-white">{formatDate(selectedPhoto.takenAt)}</p>
+                            <p className="text-white">{formatDate(selectedPhoto.taken_at)}</p>
                         </div>
 
                         <div>
                             <span className="text-gray-400">Path:</span>
-                            <p className="text-white text-xs break-all">{selectedPhoto.filePath}</p>
+                            <p className="text-white text-xs break-all">{selectedPhoto.filepath}</p>
                         </div>
                     </div>
 

@@ -6,7 +6,7 @@ declare global {
   interface ElectronAPI {
     photo: {
       save: (photoData: {
-        imageBuffer: any; // IMPORTANT: not Buffer in frontend
+        imageBuffer: ArrayBuffer; // IMPORTANT: not Buffer in frontend
         session_id?: string;
         layout_type?: string;
         metadata?: Record<string, any>;
