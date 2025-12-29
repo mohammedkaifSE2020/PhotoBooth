@@ -24,6 +24,7 @@ const electronAPI = {
   // Settings APIs
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
+    reset: () => ipcRenderer.invoke('settings:reset'),
     update: (settings: any) => ipcRenderer.invoke('settings:update', settings),
   },
 

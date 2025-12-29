@@ -19,6 +19,7 @@ declare global {
     settings: {
       get: () => Promise<any>;
       update: (settings: any) => Promise<any>;
+      reset: () => Promise<any>;
     };
 
     file: {

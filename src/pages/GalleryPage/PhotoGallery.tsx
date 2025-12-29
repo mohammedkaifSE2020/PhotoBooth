@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
 
+import { RefreshCw, Trash2, X, Maximize2, Info } from 'lucide-react';
+// Assuming these Shadcn components are installed
+import {Button } from "../../../../PhotoBooth/shared/components/ui/button";
+import { Card } from "../../../../PhotoBooth/shared/components/ui/card";
+import { ScrollArea } from "../../../../PhotoBooth/shared/components/ui/scroll-area";
+import { Separator } from "../../../../PhotoBooth/shared/components/ui/separator";
+import { Badge } from "../../../../PhotoBooth/shared/components/ui/badge";
 interface Photo {
     id: string;
     filepath: string;
@@ -112,108 +119,109 @@ export default function PhotoGallery() {
     };
 
     return (
-        <div className="h-full flex">
-            {/* Photo Grid */}
-            <div className="flex-1 overflow-y-auto p-6">
-                <div className="mb-4 flex items-center justify-between">
-                    <h2 className="text-xl font-semibold">
-                        {photos.length} Photo{photos.length !== 1 ? 's' : ''}
-                    </h2>
-                    <button
-                        onClick={loadPhotos}
-                        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                    >
-                        🔄 Refresh
-                    </button>
-                </div>
+        <div className="h-screen flex bg-background text-foreground overflow-hidden">
+            {/* Main Content Area */}
+            <main className="flex-1 flex flex-col min-w-0">
+                {/* Header Section */}
+                <header className="h-16 border-b flex items-center justify-between px-6 bg-card/50 backdrop-blur">
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-xl font-bold tracking-tight">Gallery</h2>
+                        <Badge variant="secondary" className="rounded-full">
+                            {photos.length} Photos
+                        </Badge>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={loadPhotos} className="gap-2">
+                        <RefreshCw className="w-4 h-4" />
+                        Refresh
+                    </Button>
+                </header>
 
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {photos.map((photo) => (
-                        <div
-                            key={photo.id}
-                            onClick={() => setSelectedPhoto(photo)}
-                            className={`
-                                        relative aspect-square bg-gray-800 rounded-lg overflow-hidden cursor-pointer
-                                        transition-all duration-200 hover:ring-2 hover:ring-blue-500 hover:scale-105
-                                        ${selectedPhoto?.id === photo.id ? 'ring-2 ring-blue-500' : ''}
-                                    `}
-                        >
-                            <img
-                                src={`${getMediaUrl(photo.thumbnail_path || photo.filepath)}`}
-                                alt={photo.filename}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                    // Fallback if thumbnail fails
-                                    e.currentTarget.src = `${getMediaUrl(photo.filepath)}`;
-                                }}
-                            />
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-2">
-                                <p className="text-xs text-white truncate">{photo.filename}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
+                {/* Grid Area */}
+                <ScrollArea className="flex-1 p-6">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {photos.map((photo) => (
+                            <Card 
+                                key={photo.id}
+                                className={`group relative aspect-square overflow-hidden cursor-pointer border-2 transition-all hover:shadow-xl ${
+                                    selectedPhoto?.id === photo.id ? 'border-primary' : 'border-transparent'
+                                }`}
+                                onClick={() => setSelectedPhoto(photo)}
+                            >
+                                <img
+                                    src={getMediaUrl(photo.thumbnail_path || photo.filepath)}
+                                    alt={photo.filename}
+                                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 rounded-md"
+                                    onError={(e) => (e.currentTarget.src = getMediaUrl(photo.filepath))}
+                                />
+                                {/* Hover Overlay */}
+                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <Maximize2 className="text-white w-8 h-8 opacity-70" />
+                                </div>
+                                <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                                    <p className="text-[10px] text-white truncate font-medium">{photo.filename}</p>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                </ScrollArea>
+            </main>
 
             {/* Photo Details Sidebar */}
             {selectedPhoto && (
-                <div className="w-80 bg-gray-800 border-l border-gray-700 p-6 overflow-y-auto">
-                    <div className="mb-4">
-                        <img
-                            src={`${getMediaUrl(selectedPhoto.filepath)}`}
-                            alt={selectedPhoto.filename}
-                            className="w-full rounded-lg"
-                        />
+                <aside className="w-80 border-l bg-card flex flex-col animate-in slide-in-from-right duration-300">
+                    <div className="p-4 border-b flex items-center justify-between">
+                        <h3 className="font-semibold">Photo Details</h3>
+                        <Button variant="ghost" size="icon" onClick={() => setSelectedPhoto(null)}>
+                            <X className="w-4 h-4" />
+                        </Button>
                     </div>
 
-                    <h3 className="text-lg font-semibold mb-4">Photo Details</h3>
+                    <ScrollArea className="flex-1 p-6">
+                        <div className="space-y-6">
+                            <div className="rounded-lg overflow-hidden border shadow-sm">
+                                <img
+                                    src={getMediaUrl(selectedPhoto.filepath)}
+                                    alt={selectedPhoto.filename}
+                                    className="w-full h-auto bg-muted"
+                                />
+                            </div>
 
-                    <div className="space-y-3 text-sm">
-                        <div>
-                            <span className="text-gray-400">Filename:</span>
-                            <p className="text-white break-all">{selectedPhoto.filename}</p>
+                            <div className="space-y-4">
+                                <DetailItem label="Filename" value={selectedPhoto.filename} />
+                                <DetailItem label="Dimensions" value={`${selectedPhoto.width} × ${selectedPhoto.height}`} />
+                                <DetailItem label="File Size" value={formatFileSize(selectedPhoto.file_size)} />
+                                <DetailItem label="Taken" value={formatDate(selectedPhoto.taken_at)} />
+                                <DetailItem label="Location" value={selectedPhoto.filepath} isPath />
+                            </div>
+
+                            <Separator />
+
+                            <div className="pt-2 space-y-2">
+                                <Button 
+                                    variant="destructive" 
+                                    className="w-full gap-2" 
+                                    onClick={() => deletePhoto(selectedPhoto.id)}
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete Photo
+                                </Button>
+                            </div>
                         </div>
-
-                        <div>
-                            <span className="text-gray-400">Dimensions:</span>
-                            <p className="text-white">
-                                {selectedPhoto.width} × {selectedPhoto.height}
-                            </p>
-                        </div>
-
-                        <div>
-                            <span className="text-gray-400">File Size:</span>
-                            <p className="text-white">{formatFileSize(selectedPhoto.file_size)}</p>
-                        </div>
-
-                        <div>
-                            <span className="text-gray-400">Taken:</span>
-                            <p className="text-white">{formatDate(selectedPhoto.taken_at)}</p>
-                        </div>
-
-                        <div>
-                            <span className="text-gray-400">Path:</span>
-                            <p className="text-white text-xs break-all">{selectedPhoto.filepath}</p>
-                        </div>
-                    </div>
-
-                    <div className="mt-6 space-y-2">
-                        <button
-                            onClick={() => deletePhoto(selectedPhoto.id)}
-                            className="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                            🗑️ Delete Photo
-                        </button>
-
-                        <button
-                            onClick={() => setSelectedPhoto(null)}
-                            className="w-full px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors"
-                        >
-                            Close
-                        </button>
-                    </div>
-                </div>
+                    </ScrollArea>
+                </aside>
             )}
         </div>
     )
+}
+
+// Helper for clean UI items
+function DetailItem({ label, value, isPath = false }: { label: string; value: string; isPath?: boolean }) {
+    return (
+        <div className="space-y-1">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">{label}</span>
+            <p className={`text-sm leading-snug ${isPath ? 'text-xs break-all text-muted-foreground italic' : 'text-foreground font-medium'}`}>
+                {value}
+            </p>
+        </div>
+    );
 }
