@@ -5,7 +5,7 @@ const electronAPI = {
   // Photo APIs
   photo: {
     save: (photoData: {
-      imageBuffer: Buffer;
+      imageBuffer: ArrayBuffer;
       session_id?: string;
       layout_type?: string;
       metadata?: Record<string, any>;
@@ -24,6 +24,7 @@ const electronAPI = {
   // Settings APIs
   settings: {
     get: () => ipcRenderer.invoke('settings:get'),
+    reset: () => ipcRenderer.invoke('settings:reset'),
     update: (settings: any) => ipcRenderer.invoke('settings:update', settings),
   },
 

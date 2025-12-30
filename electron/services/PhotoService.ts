@@ -5,8 +5,8 @@ import fs from "fs";
 import { v4 as uuidv4 } from "uuid";
 import sharp from "sharp";
 import { app } from "electron";
-import { Photo } from "@electron/interface/Photo";
-import { PhotoInput } from "@electron/interface/PhotoInput";
+import { Photo } from "../interface/Photo";
+import { PhotoInput } from "../interface/PhotoInput";
 import { getDatabase } from "../database/connection";
 
 export class PhotoService {
