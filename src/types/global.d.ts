@@ -26,6 +26,16 @@ declare global {
       selectDirectory: () => Promise<string | null>;
     };
 
+    template: {
+      getAll: (activeOnly?: boolean) => Promise<any[]>;
+      getById: (id: string) => Promise<any>;
+      create: (templateData: any) => Promise<any>;
+      update: (id: string, updates: any) => Promise<any>;
+      delete: (id: string) => Promise<boolean>;
+      apply: (photoId: string, templateId: string, customOverlays?: any) => Promise<any>;
+      initDefaults: () => Promise<void>;
+    };
+
     on: (channel: string, callback: (...args: any[]) => void) => () => void;
   }
 

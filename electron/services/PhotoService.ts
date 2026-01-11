@@ -15,6 +15,7 @@ export class PhotoService {
     //get default save directory
     private getDefaultSaveDurectrory(): string {
         const userDataPath = app.getPath('userData');
+        log.info(`Default photo save directory: ${userDataPath}`);
         return path.join(userDataPath, 'photos');
     }
 

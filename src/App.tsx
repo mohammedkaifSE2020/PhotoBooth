@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import CameraCapture from './pages/CaptureMode/CameraCapture'
 import SettingsPanel from './pages/SettingsPage/SettingsPanel'
 import PhotoGallery from './pages/GalleryPage/PhotoGallery'
+import TemplateEditor from './pages/Template/TemplateEditor'
 
 import { Camera, Image, Settings, Circle } from "lucide-react";
 
-type View = 'capture' | 'gallery' | 'settings';
+type View = 'capture' | 'gallery' | 'settings' | 'Templates';
 
 function App() {
   const [currentView, setCurrentView] = useState<View>('capture');
@@ -76,6 +77,12 @@ function App() {
               icon={<Settings className="size-4" />}
               label="Settings"
             />
+            <NavButton
+              active={currentView === 'Templates'}
+              onClick={() => setCurrentView('Templates')}
+              icon={<Settings className="size-4" />}
+              label="Templates"
+            />
           </nav>
         </div>
       </header>
@@ -89,6 +96,7 @@ function App() {
           {currentView === 'capture' && <CameraCapture />}
           {currentView === 'gallery' && <PhotoGallery />}
           {currentView === 'settings' && <SettingsPanel />}
+          {currentView === 'Templates' && <TemplateEditor />}
         </div>
       </main>
 
