@@ -1,11 +1,14 @@
 import { useState, useEffect, useRef } from "react"
-import { useNavigate } from 'react-router-dom';
 
 import { Camera, CameraOff, Sparkles, CheckCircle2, Info } from 'lucide-react';
 import { Button } from "../../../../PhotoBooth/shared/components/ui/button";
 import { Badge } from "../../../../PhotoBooth/shared/components/ui/badge";
 import { Card } from "../../../../PhotoBooth/shared/components/ui/card";
-import { resolve } from "path";
+
+import { useSettings } from "@/hooks/useSettings";
+import { photoProcessingService } from "@/services/photoProcessingService";
+import { usePhotoCapture } from "@/hooks/usePhotoCapture";
+
 
 type LayoutType = 'single' | 'strip-3' | 'strip-4';
 
@@ -15,103 +18,27 @@ interface CapturedPhoto {
 }
 
 export default function CameraCapture() {
-    const [isCapturing, setIsCapturing] = useState(false)
-    const [countDown, setCountDown] = useState<number | null>(null)
     const [lastPhoto, setLastPhoto] = useState<string | null>(null)
-    const [cameraError, setCameraError] = useState<string | null>(null)
-    const [settings, setSettings] = useState<any>(null);
 
     const [capturedPhotos, setCapturedPhotos] = useState<CapturedPhoto[]>([]);
     const [showPreview, setShowPreview] = useState(false);
     const [selectedLayout, setSelectedLayout] = useState<LayoutType>('single');
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
 
-    const videoRef = useRef<HTMLVideoElement>(null);
-    const streamRef = useRef<MediaStream | null>(null);
-
-    //const navigate = useNavigate();
-
-    //load settings
-    useEffect(() => {
-        loadSettings();
-    }, []);
+    const { settings } = useSettings();
+    const { videoRef, startCamera, stopCamera, cameraError, capturePhoto, countDown, isCapturing } = usePhotoCapture(
+        settings ? settings.resolution : '1280x720'
+    );
 
     //start camera
     useEffect(() => {
         if (settings) {
             startCamera();
         }
-
         return () => {
             stopCamera();
         }
-    }, [settings]);
-
-    //keyboard shortcuts
-    useEffect(() => {
-        const handleKeyPress = (event: KeyboardEvent) => {
-            if (event.code === 'Space') {
-                event.preventDefault();
-                capturePhoto();
-            } else if (event.code === 'Escape' && showPreview) {
-                handleRetake();
-            } else if (event.code === 'Enter' && showPreview) {
-                handleKeepPhotos();
-            }
-        };
-        window.addEventListener('keydown', handleKeyPress);
-        return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [isCapturing, showPreview]);
-
-    const loadSettings = async () => {
-        try {
-            const currentSettings = await window.electronAPI.settings.get();
-            setSettings(currentSettings);
-        } catch (error) {
-            console.error("Failed to load settings:", error);
-        }
-    }
-
-    const startCamera = async () => {
-        try {
-            setCameraError(null);
-
-            const cameras = await navigator.mediaDevices.enumerateDevices();
-            const videoDevices: any = cameras.filter(device => device.kind === 'videoinput');
-
-            const physicalCamera = videoDevices.find((d: any) =>
-                !d.label.toLowerCase().includes('hitpaw') &&
-                !d.label.toLowerCase().includes('virtual')
-            ) || videoDevices[0];
-
-            const [width, height] = settings.resolution.split('x').map(Number);
-
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: {
-                    deviceId: physicalCamera ? { exact: physicalCamera.deviceId } : undefined,
-                    width: { ideal: width },
-                    height: { ideal: height }
-                },
-                audio: false
-            })
-
-            if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-                streamRef.current = stream;
-            }
-        } catch (error) {
-            console.error('Error accessing camera:', error);
-            setCameraError('Could not access camera. Please check permissions.');
-        }
-    }
-
-
-    const stopCamera = () => {
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach(track => track.stop());
-            streamRef.current = null;
-        }
-    };
+    }, [settings, startCamera, stopCamera]);
 
     const startPhotoSesssion = async () => {
         setCapturedPhotos([]);
@@ -142,139 +69,18 @@ export default function CameraCapture() {
         setCurrentPhotoIndex(0);
     }
 
-    const capturePhoto = async (): Promise<CapturedPhoto | null | undefined> => {
-        if (!videoRef.current || isCapturing || !settings) return null;
-
-        // Check if video is actually transmitting data
-        if (videoRef.current.readyState < 2) {
-            console.error("Video stream not ready");
-            return null;
-        }
-        console.log("hi")
-        setIsCapturing(true);
-
-        try {
-            const countDownDuration = settings.countDownDuration || 3;
-            for (let i = countDownDuration; i > 0; i--) {
-                setCountDown(i);
-                // Play sound if enabled
-                if (settings.enable_sound) {
-                    playBeep();
-                }
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-            setCountDown(null);
-
-            if (settings.enable_flash) {
-                showFlash();
-            }
-
-            if (settings.enable_sound) {
-                playShutter();
-            }
-
-            //capture photo logic
-            const canvas = document.createElement('canvas');
-            canvas.width = videoRef.current.videoWidth;
-            canvas.height = videoRef.current.videoHeight;
-            const context = canvas.getContext('2d');
-
-            if (context) {
-                context.drawImage(videoRef.current, 0, 0);
-                const dataUlr = canvas.toDataURL('image/jpeg', 0.95);
-
-                console.log({
-                    dataUrl: dataUlr,
-                    timestamp: new Date(),
-                })
-
-                return {
-                    dataUrl: dataUlr,
-                    timestamp: new Date(),
-                }
-            }
-        } catch (error) {
-            console.error('Error capturing photo:', error);
-            alert('Failed to save photo: ' + error);
-            return null;
-        } finally {
-            setIsCapturing(false);
-        }
-    }
-
-    function playBeep() {
-        const audioContext = new AudioContext();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.value = 800;
-        gainNode.gain.value = 0.1;
-
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.1);
-    };
-
-    function playShutter() {
-        const audioContext = new AudioContext();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.value = 1200;
-        gainNode.gain.value = 0.15;
-
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.15);
-    };
-
-    function showFlash() {
-        const flash = document.createElement('div');
-        flash.className = 'fixed inset-0 bg-white z-50 pointer-events-none';
-        flash.style.animation = 'flash 0.3s ease-out';
-        document.body.appendChild(flash);
-        setTimeout(() => flash.remove(), 300);
-    };
-
     const handleKeepPhotos = async () => {
-        // Create composite image based on layout
-        const compositeDataUrl = await createCompositeImage();
-
-        // Split the base64 string to get the actual data
-        const base64Data = compositeDataUrl.split(',')[1];
-
-        // Convert base64 string directly to an ArrayBuffer
-        const binaryString = window.atob(base64Data);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-            bytes[i] = binaryString.charCodeAt(i);
+        const result = await photoProcessingService.saveAndProcessPhotos(capturedPhotos, selectedLayout);
+        
+        if (result.success && result.compositeDataUrl) {
+            setLastPhoto(result.compositeDataUrl);
+            // Hide preview after 3 seconds
+            setTimeout(() => setLastPhoto(null), 3000);
+            setShowPreview(false);
+            startCamera();
+        } else {
+            alert(result.error || 'Failed to save photos');
         }
-        const arrayBuffer = bytes.buffer;
-
-        //save photo using electron API
-        const photo = await window.electronAPI.photo.save({
-            imageBuffer: arrayBuffer,
-            layout_type: 'single',
-            metadata: {
-                timestamp: new Date().toISOString(),
-                photoCount: capturedPhotos.length,
-            },
-        })
-
-        // Show preview
-        const imageDataUrl = compositeDataUrl;
-        setLastPhoto(imageDataUrl);
-
-        // Hide preview after 3 seconds
-        setTimeout(() => setLastPhoto(null), 3000);
-
-        setShowPreview(false);
-        startCamera();
-
     }
 
     const handleRetake = () => {
@@ -282,56 +88,6 @@ export default function CameraCapture() {
         setShowPreview(false);
         setCurrentPhotoIndex(0);
         startCamera();
-    }
-
-    const createCompositeImage = async (): Promise<string> => {
-        if (selectedLayout === 'single') {
-            console.log("CompositeImage", capturedPhotos)
-            return capturedPhotos[0].dataUrl;
-        }
-
-        const photoWidth = 600;
-        const photoHeight = 400;
-        const spacing = 10;
-        const padding = 20;
-
-        const photosCount = capturedPhotos.length;
-
-        // Create strip layout
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d')!;
-        // Vertical strip layout
-        canvas.width = photoWidth + (padding * 2);
-        canvas.height = (photoHeight * photosCount) + (spacing * (photosCount - 1)) + (padding * 2);
-
-        // White background
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Draw photos
-        for (let i = 0; i < capturedPhotos.length; i++) {
-            const img = new Image();
-            await new Promise((resolve) => {
-                img.onload = resolve;
-                img.src = capturedPhotos[i].dataUrl;
-            });
-
-            const y = padding + (i * (photoHeight + spacing));
-            ctx.drawImage(img, padding, y, photoWidth, photoHeight);
-
-            // Add border
-            ctx.strokeStyle = '#e5e7eb';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(padding, y, photoWidth, photoHeight);
-        }
-
-        // Add watermark
-        ctx.fillStyle = '#9ca3af';
-        ctx.font = '14px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('PhotoBooth Pro', canvas.width / 2, canvas.height - 8);
-
-        return canvas.toDataURL('image/jpeg', 0.95);
     }
 
     if (cameraError) {

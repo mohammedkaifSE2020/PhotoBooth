@@ -37,6 +37,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.15",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "archiver": "^7.0.1",
     "better-sqlite3": "^9.2.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -44,6 +45,7 @@
     "electron-store": "^8.1.0",
     "electron-updater": "^6.1.7",
     "lucide-react": "^0.562.0",
+    "nodemailer": "^7.0.12",
     "react-router-dom": "^7.11.0",
     "sharp": "^0.33.1",
     "tailwind-merge": "^3.4.0",
@@ -51,8 +53,10 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/archiver": "^7.0.0",
     "@types/better-sqlite3": "^7.6.8",
     "@types/node": "^20.10.6",
+    "@types/nodemailer": "^7.0.5",
     "@types/react": "^18.2.46",
     "@types/react-dom": "^18.2.18",
     "@types/uuid": "^9.0.7",
