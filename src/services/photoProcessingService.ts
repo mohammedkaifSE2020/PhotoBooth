@@ -12,6 +12,7 @@ interface PhotoSaveResult {
   success: boolean;
   compositeDataUrl?: string;
   error?: string;
+  id?: any;
 }
 
 export const photoProcessingService = {
@@ -46,6 +47,7 @@ export const photoProcessingService = {
       return {
         success: true,
         compositeDataUrl,
+        id: photo.id,
       };
     } catch (error) {
       console.error('Error saving photo:', error);

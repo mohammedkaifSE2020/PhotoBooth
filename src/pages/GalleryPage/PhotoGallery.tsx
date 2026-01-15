@@ -261,6 +261,7 @@ export default function PhotoGallery() {
     const getMediaUrl = (pathValue: string | undefined) => {
         if (!pathValue) return '';
 
+        console.log(pathValue)
         // 1. If it's already a correctly formatted media URL, return it
         if (pathValue.startsWith('media://local-resource/')) {
             return pathValue;
