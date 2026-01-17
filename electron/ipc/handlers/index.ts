@@ -3,6 +3,7 @@ import { registerPhotoHandlers } from './PhotoHandler';
 import { registerSettingsHandlers } from './SettingsHandler';
 import { registerFileHandlers } from './FileHandler';
 import { registerTemplateHandler } from './TemplateHandler';
+import { registerEmailHandler } from './EmailHandler';
 
 
 export function registerIPCHandlers(): void {
@@ -12,6 +13,7 @@ export function registerIPCHandlers(): void {
   registerSettingsHandlers();
   registerFileHandlers();
   registerTemplateHandler();
+  registerEmailHandler();
 
   log.info('All IPC handlers registered successfully');
 }

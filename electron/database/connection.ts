@@ -234,6 +234,22 @@ function getMigrations() {
         CREATE INDEX IF NOT EXISTS idx_templates_layout ON templates(layout_type);
         CREATE INDEX IF NOT EXISTS idx_print_jobs_status ON print_jobs(status);
         CREATE INDEX IF NOT EXISTS idx_print_jobs_created ON print_jobs(created_at DESC);  `
+    },
+    {
+      name: '004_email_config',
+      sql: `CREATE TABLE IF NOT EXISTS email_config (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        smtp_host TEXT,
+        smtp_port INTEGER,
+        smtp_secure BOOLEAN DEFAULT 0,
+        smtp_user TEXT,
+        smtp_password TEXT,
+        from_email TEXT,
+        from_name TEXT,
+        enabled BOOLEAN DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )`
     }
   ];
 }

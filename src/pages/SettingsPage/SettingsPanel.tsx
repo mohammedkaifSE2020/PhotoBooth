@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 
-import { Camera, HardDrive, Save, RotateCcw, FolderOpen, Image as ImageIcon, Volume2, Zap, Loader2, Monitor } from 'lucide-react';
+import { Camera, HardDrive, Save, RotateCcw, FolderOpen, Image as ImageIcon, Volume2, Zap, Loader2, Monitor, Mail } from 'lucide-react';
 import { Button } from "../../../../PhotoBooth/shared/components/ui/button";
+import EmailSettingsPanel from "../../components/settings/EmailSettingsPanel";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../../PhotoBooth/shared/components/ui/card";
 import { Label } from "../../../../PhotoBooth/shared/components/ui/label";
 import { Switch } from "../../../../PhotoBooth/shared/components/ui/switch";
@@ -123,9 +124,10 @@ export default function SettingsPanel() {
                 </div>
 
                 <Tabs defaultValue="camera" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-zinc-900/50 p-1 border border-white/5">
+                    <TabsList className="grid w-full grid-cols-3 bg-zinc-900/50 p-1 border border-white/5">
                         <TabsTrigger value="camera" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-white">Camera</TabsTrigger>
                         <TabsTrigger value="storage" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-white">Storage</TabsTrigger>
+                        <TabsTrigger value="email" className="data-[state=active]:bg-zinc-800 data-[state=active]:text-white">Email</TabsTrigger>
                     </TabsList>
 
                     {/* Camera Tab Content */}
@@ -282,6 +284,19 @@ export default function SettingsPanel() {
                                         </div>
                                     </div>
                                 </div>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* Email Tab Content */}
+                    <TabsContent value="email" className="mt-6">
+                        <Card className="border-white/5 bg-zinc-900/40 backdrop-blur-xl shadow-2xl">
+                            <CardHeader>
+                                <CardTitle className="text-xl flex items-center gap-2"><Mail className="w-5 h-5 text-blue-500" /> Email Configuration</CardTitle>
+                                <CardDescription className="text-zinc-500">Configure SMTP settings for sending photos via email.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <EmailSettingsPanel />
                             </CardContent>
                         </Card>
                     </TabsContent>

@@ -51,6 +51,15 @@ const electronAPI = {
       ipcRenderer.invoke('template:init-defaults'),
   },
 
+  // Email APIs
+  email: {
+    getConfig: () => ipcRenderer.invoke('email:get-config'),
+    updateConfig: (updates: any) => ipcRenderer.invoke('email:update-config', updates),
+    send: (options: any) => ipcRenderer.invoke('email:send', options),
+    sendPhoto: (photoPath: string, toEmail: string, guestName?: string) => ipcRenderer.invoke('email:send-photo', photoPath, toEmail, guestName),
+    testConfig: () => ipcRenderer.invoke('email:test-config'),
+  },
+
   // Event listeners
   on: (channel: string, callback: (...args: any[]) => void) => {
     const subscription = (_event: IpcRendererEvent, ...args: any[]) =>

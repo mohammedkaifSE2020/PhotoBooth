@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
     RefreshCw, Maximize2, FileText, X, Ruler, HardDrive,
-    Calendar, Trash2, Palette, Save, Undo2, Wand2, Sun, Contrast
+    Calendar, Trash2, Palette, Save, Undo2, Wand2, Sun, Contrast, Share2
 } from "lucide-react";
 // Assuming these Shadcn components are installed
 import { Button } from "../../../../PhotoBooth/shared/components/ui/button";
@@ -36,6 +37,7 @@ export default function PhotoGallery() {
     const [photos, setPhotos] = useState<Photo[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+    const navigate = useNavigate();
 
     //filter functionality
     const [filterSettings, setFilterSettings] = useState<FilterSettings>({
@@ -216,6 +218,12 @@ export default function PhotoGallery() {
         }
     };
 
+    const navigateToExport = () => {
+        if (selectedPhoto) {
+            navigate(`/share-export?id=${selectedPhoto.id}&path=${encodeURIComponent(selectedPhoto.filepath)}`);
+        }
+    };
+
     const formatFileSize = (bytes: number): string => {
         if (bytes < 1024) return bytes + ' B';
         if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
@@ -260,8 +268,6 @@ export default function PhotoGallery() {
 
     const getMediaUrl = (pathValue: string | undefined) => {
         if (!pathValue) return '';
-
-        console.log(pathValue)
         // 1. If it's already a correctly formatted media URL, return it
         if (pathValue.startsWith('media://local-resource/')) {
             return pathValue;
@@ -402,6 +408,25 @@ export default function PhotoGallery() {
                                         </div>
 
                                         <Separator className="bg-white/5" />
+
+                                        <Button
+                                            onClick={navigateToExport}
+                                            className="
+                                                        w-full h-11 
+                                                        relative overflow-hidden
+                                                        flex items-center justify-center gap-2.5 
+                                                        bg-blue-500/10 hover:bg-blue-600 
+                                                        text-blue-400 hover:text-white 
+                                                        border border-blue-500/20 hover:border-blue-400/50
+                                                        transition-all duration-300 group
+                                                        rounded-xl shadow-lg shadow-blue-900/10
+                                                    "
+                                        >
+                                            <Share2 className="w-4 h-4 transition-transform group-hover:scale-110" />
+                                            <span className="text-[10px] font-black uppercase tracking-[0.15em] leading-none">
+                                                Share & Export
+                                            </span>
+                                        </Button>
 
                                         <Button
                                             variant="destructive"

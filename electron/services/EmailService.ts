@@ -37,7 +37,7 @@ export class EmailService {
   async getEmailConfig(): Promise<EmailConfig> {
     try {
       const config = this.db
-        .prepare('SELECT * FROM email_config WHERE id = 1')
+        .prepare('SELECT * FROM email_configs WHERE id = 1')
         .get() as EmailConfig | undefined;
       
       if (!config) {
@@ -62,13 +62,15 @@ export class EmailService {
       Object.entries(updates).forEach(([key, value]) => {
         if (key !== 'id' && value !== undefined) {
           updateFields.push(`${key} = ?`);
-          values.push(value);
+          // Convert booleans to 0 or 1 for SQLite
+          values.push(typeof value === 'boolean' ? (value ? 1 : 0) : value);
         }
       });
 
       if (updateFields.length > 0) {
         values.push(1); // WHERE id = 1
-        const query = `UPDATE email_config SET ${updateFields.join(', ')} WHERE id = ?`;
+        log.info('Updating email config with values:', values);
+        const query = `UPDATE email_configs SET ${updateFields.join(', ')} WHERE id = ?`;
         this.db.prepare(query).run(...values);
       }
 
@@ -90,7 +92,7 @@ export class EmailService {
   private async initializeEmailConfig(): Promise<EmailConfig> {
     try {
       this.db.prepare(`
-        INSERT OR REPLACE INTO email_config (
+        INSERT OR REPLACE INTO email_configs (
           id, smtp_host, smtp_port, smtp_secure, enabled
         ) VALUES (1, 'smtp.gmail.com', 587, 0, 0)
       `).run();

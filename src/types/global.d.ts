@@ -36,6 +36,14 @@ declare global {
       initDefaults: () => Promise<void>;
     };
 
+    email: {
+      getConfig: () => Promise<any>;
+      updateConfig: (updates: any) => Promise<any>;
+      send: (options: any) => Promise<boolean>;
+      sendPhoto: (photoPath: string, toEmail: string, guestName?: string) => Promise<boolean>;
+      testConfig: () => Promise<boolean>;
+    };
+
     on: (channel: string, callback: (...args: any[]) => void) => () => void;
   }
 

@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { Camera, Image, Settings, Layout } from 'lucide-react';
+import { Camera, Image, Settings, Layout, Share2 } from 'lucide-react';
 
 // Lazy load components for better performance
 const CameraCapture = lazy(() => import('@/pages/CaptureMode/CameraCapture'));
@@ -7,8 +7,9 @@ const PhotoGallery = lazy(() => import('@/pages/GalleryPage/PhotoGallery'));
 const SettingsPanel = lazy(() => import('@/pages/SettingsPage/SettingsPanel'));
 const TemplateEditor = lazy(() => import('@/pages/Template/TemplateEditor'));
 const CompleteWorkflow = lazy(() => import('@/pages/Workflow/CompleteWorkflow'));
+const ShareExportPage = lazy(() => import('@/pages/ShareExportPage/ShareExportPage'));
 
-export type RouteKey = 'capture' | 'workflow' | 'gallery' | 'settings' | 'templates';
+export type RouteKey = 'capture' | 'workflow' | 'gallery' | 'settings' | 'templates' | 'share-export';
 
 export interface RouteConfig {
   key: RouteKey;
@@ -59,6 +60,14 @@ export const routeConfig: RouteConfig[] = [
     icon: <Layout className="size-4" />,
     component: TemplateEditor,
     showInNav: true,
+  },
+  {
+    key: 'share-export',
+    path: '/share-export',
+    label: 'Share & Export',
+    icon: <Share2 className="size-4" />,
+    component: ShareExportPage,
+    showInNav: false,
   },
 ];
 
