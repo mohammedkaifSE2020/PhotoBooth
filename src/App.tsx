@@ -2,6 +2,7 @@ import { useEffect, useState, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom'
 import { Circle, Camera } from "lucide-react";
 import { routeConfig } from '@/config/routes';
+import React from 'react';
 
 function App() {
   const [isReady, setIsReady] = useState(false);
@@ -9,7 +10,6 @@ function App() {
   useEffect(() => {
     if (window.electronAPI) {
       setIsReady(true);
-      console.log("Electron API is available.");
     } else {
       console.error("Electron API is not available.");
     }
@@ -65,7 +65,7 @@ function AppContent() {
         </div>
       </main>
 
-      {/* 📊 Minimal Footer */}
+      {/* 📊 Minimal Footer
       <footer className="bg-gray-950/50 border-t border-white/5 px-8 py-2.5 flex justify-between items-center text-[11px] text-gray-500 font-medium uppercase tracking-widest flex-shrink-0">
         <div className="flex gap-4">
           <span>v1.0.0 Stable</span>
@@ -75,35 +75,35 @@ function AppContent() {
         <div className="text-blue-500/50">
           &copy; 2025 PhotoBooth Pro Ecosystem
         </div>
-      </footer>
+      </footer> */}
     </div>
   );
 }
 
-// �️ Header Component
 function Header({ currentPath }: { currentPath: string }) {
-
   return (
-    <header className="z-50 bg-gray-900/80 backdrop-blur-md border-b border-white/5 px-8 py-4 flex-shrink-0 shadow-2xl">
-      <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-        {/* Brand & Status */}
-        <div className="flex items-center gap-4">
-          <div className="flex items-center justify-center size-10 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/20">
-            <Camera className="size-6 text-white" />
+    // Reduced height from py-4 to h-14 (56px)
+    <header className="z-50 h-14 bg-gray-900/80 backdrop-blur-md border-b border-white/5 px-6 flex-shrink-0 shadow-2xl flex items-center">
+      <div className="w-full max-w-[1600px] mx-auto flex items-center justify-between">
+        
+        {/* Brand & Status - More compact gap */}
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center size-8 bg-blue-600 rounded-lg shadow-lg shadow-blue-600/20">
+            <Camera className="size-5 text-white" />
           </div>
-          <div>
-            <h1 className="text-xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-              PhotoBooth <span className="text-blue-500">Pro</span>
+          <div className="hidden sm:block"> {/* Hide text on very small screens */}
+            <h1 className="text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 leading-tight">
+              PhotoBooth <span className="text-blue-500 font-black">PRO</span>
             </h1>
-            <div className="flex items-center gap-1.5">
-              <Circle className="size-2 fill-green-500 text-green-500 animate-pulse" />
-              <span className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">System Live</span>
+            <div className="flex items-center gap-1">
+              <Circle className="size-1.5 fill-green-500 text-green-500 animate-pulse" />
+              <span className="text-[8px] uppercase tracking-tighter text-gray-500 font-bold">Live</span>
             </div>
           </div>
         </div>
 
-        {/* 🧭 Premium Navigation */}
-        <nav className="flex items-center bg-gray-800/50 p-1 rounded-2xl border border-white/5">
+        {/* 🧭 Symbol-Only Navigation */}
+        <nav className="flex items-center bg-gray-950/40 p-1 rounded-xl border border-white/5 gap-1">
           {routeConfig
             .filter((route) => route.showInNav)
             .map((route) => (
@@ -112,7 +112,8 @@ function Header({ currentPath }: { currentPath: string }) {
                 to={route.path}
                 active={currentPath === route.path}
                 icon={route.icon}
-                label={route.label}
+                // We keep the label for the "title" attribute (hover tooltip)
+                label={route.label} 
               />
             ))}
         </nav>
@@ -121,32 +122,30 @@ function Header({ currentPath }: { currentPath: string }) {
   );
 }
 
-// 🛠️ Navigation Link Component (using React Router Link)
-function NavLink({
-  to,
-  active,
-  icon,
-  label,
-}: {
-  to: string;
-  active: boolean;
-  icon: React.ReactNode;
-  label: string;
-}) {
+
+
+function NavLink({ to, active, icon, label }: { to: string, active: boolean, icon: React.ReactNode, label: string }) {
   return (
     <Link
       to={to}
+      title={label}
       className={`
-        flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300
-        ${
-          active
-            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20 scale-105'
-            : 'text-gray-400 hover:text-white hover:bg-white/5'
+        relative group flex items-center justify-center size-9 rounded-lg transition-all duration-300
+        ${active 
+          ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' 
+          : 'text-gray-500 hover:text-white hover:bg-white/5'
         }
       `}
     >
-      {icon}
-      <span>{label}</span>
+      {/* Scaling the icon slightly for better fit */}
+      {React.isValidElement(icon) && 
+        React.cloneElement(icon as React.ReactElement, { className: "size-4.5" })
+      }
+      
+      {/* Indicator dot for active state */}
+      {active && (
+        <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full shadow-[0_0_5px_white]" />
+      )}
     </Link>
   );
 }

@@ -63,7 +63,6 @@ export default function CameraCapture() {
                 }
             }
         }
-        console.log(photos);
         setCapturedPhotos(photos);
         setShowPreview(true);
         setCurrentPhotoIndex(0);
@@ -71,7 +70,7 @@ export default function CameraCapture() {
 
     const handleKeepPhotos = async () => {
         const result = await photoProcessingService.saveAndProcessPhotos(capturedPhotos, selectedLayout);
-        
+
         if (result.success && result.compositeDataUrl) {
             setLastPhoto(result.compositeDataUrl);
             // Hide preview after 3 seconds
@@ -111,137 +110,101 @@ export default function CameraCapture() {
 
     }
     return (
-        <div className="h-full flex flex-col">
-            {/* Layout Selector */}
+        <div className="h-screen flex flex-col bg-black overflow-hidden relative">
+
+            {/* 1. Top Layout Selector - Absolute so it floats over the video */}
             {!isCapturing && !showPreview && (
-                <div className="flex-shrink-0 bg-gray-800 border-b border-gray-700 px-6 py-3">
+                <div className="absolute top-0 left-0 right-0 z-20 bg-gradient-to-b from-black/60 to-transparent px-6 py-6">
                     <div className="flex items-center justify-center gap-4">
-                        <span className="text-sm text-gray-400">Layout:</span>
+                        <span className="text-sm font-bold text-white uppercase tracking-widest drop-shadow-md">Layout:</span>
                         {(['single', 'strip-3', 'strip-4'] as LayoutType[]).map((layout) => (
                             <button
                                 key={layout}
                                 onClick={() => setSelectedLayout(layout)}
-                                className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedLayout === layout
-                                    ? 'bg-blue-600 text-white shadow-lg scale-105'
-                                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                className={`px-5 py-2 rounded-full text-xs font-bold uppercase transition-all backdrop-blur-md border ${selectedLayout === layout
+                                        ? 'bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(37,99,235,0.5)] scale-105'
+                                        : 'bg-black/40 border-white/20 text-gray-300 hover:bg-black/60'
                                     }`}
                             >
-                                {layout === 'single' ? '📷 Single' :
-                                    layout === 'strip-3' ? '📸 3-Strip' : '🎞️ 4-Strip'}
+                                {layout === 'single' ? '📷 Single' : layout === 'strip-3' ? '📸 3-Strip' : '🎞️ 4-Strip'}
                             </button>
                         ))}
                     </div>
                 </div>
             )}
 
-            {/* Camera Preview or Photo Preview */}
-            <div className="flex-1 flex items-center justify-center p-8 relative">
+            {/* 2. Main Viewport Area */}
+            <div className="flex-1 relative min-h-0 w-full h-full">
                 {!showPreview ? (
-                    // Camera Preview
-                    <div className="relative max-w-6xl w-full aspect-video bg-black rounded-lg overflow-hidden shadow-2xl">
-                        <video
-                            ref={videoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                            className="w-full h-full object-cover"
-                        />
+                    <>
+                        {/* Full Screen Camera Video */}
+                        <div className="absolute inset-0 z-0">
+                            <video
+                                ref={videoRef}
+                                autoPlay
+                                playsInline
+                                muted
+                                className="w-full h-full object-cover mirror scale-x-[-1]" // 'mirror' class optional for natural feel
+                            />
+
+                            {/* Subtle Vignette Overlay for Depth */}
+                            <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_40%,rgba(0,0,0,0.4)_100%)] pointer-events-none" />
+                        </div>
 
                         {/* Countdown Overlay */}
                         {countDown !== null && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm">
-                                <div className="text-9xl font-bold text-white animate-bounce-in">
+                            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-black/40 backdrop-blur-[2px]">
+                                <div className="text-[12rem] font-black text-white animate-pulse drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]">
                                     {countDown}
                                 </div>
-                                {selectedLayout !== 'single' && (
-                                    <div className="mt-4 text-2xl text-white">
-                                        Photo {currentPhotoIndex} of {selectedLayout === 'strip-3' ? 3 : 4}
-                                    </div>
-                                )}
+                                <Badge className="mt-4 bg-blue-600 text-lg px-6 py-1">
+                                    Photo {currentPhotoIndex} of {selectedLayout === 'strip-3' ? 3 : 4}
+                                </Badge>
                             </div>
                         )}
-
-                        {/* Frame overlay */}
-                        <div className="absolute inset-0 pointer-events-none border-4 border-white border-opacity-20 rounded-lg"></div>
-                    </div>
+                    </>
                 ) : (
-                    // Photo Preview with Retake Option
-                    <div className="max-w-4xl w-full">
-                        <div className="bg-gray-800 rounded-lg p-6 shadow-2xl animate-fade-in">
-                            <h3 className="text-2xl font-bold mb-4 text-center">Preview Your Photos</h3>
-
-                            <div className="grid gap-4 mb-6">
-                                {selectedLayout === 'single' ? (
-                                    <img
-                                        src={capturedPhotos[0]?.dataUrl}
-                                        alt="Captured"
-                                        className="w-full rounded-lg shadow-lg"
-                                    />
-                                ) : (
-                                    <div className="grid grid-cols-2 gap-4">
-                                        {capturedPhotos.map((photo, index) => (
-                                            <div key={index} className="relative">
-                                                <img
-                                                    src={photo.dataUrl}
-                                                    alt={`Photo ${index + 1}`}
-                                                    className="w-full rounded-lg shadow-lg"
-                                                />
-                                                <div className="absolute top-2 left-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
-                                                    {index + 1}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex gap-4">
-                                <button
-                                    onClick={handleRetake}
-                                    className="flex-1 px-6 py-3 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-all transform hover:scale-105 font-medium"
-                                >
-                                    🔄 Retake (ESC)
-                                </button>
-                                <button
-                                    onClick={handleKeepPhotos}
-                                    className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all transform hover:scale-105 font-medium"
-                                >
-                                    ✓ Keep Photos (ENTER)
-                                </button>
-                            </div>
+                    /* Full Screen Preview Mode */
+                    <div className="absolute inset-0 z-40 bg-[#0d0d0f] flex items-center justify-center p-8 overflow-y-auto">
+                        <div className="max-w-4xl w-full animate-in fade-in zoom-in duration-500">
+                            {/* ... (Keep your existing preview grid logic here) ... */}
                         </div>
                     </div>
                 )}
             </div>
 
-            {/* Capture Button */}
+            {/* 3. Bottom Controls - Floating over the video */}
             {!showPreview && (
-                <div className="flex-shrink-0 pb-8">
-                    <div className="flex flex-col items-center gap-4">
-                        <button
-                            onClick={startPhotoSesssion}
-                            disabled={isCapturing}
-                            className={`
-                relative w-20 h-20 rounded-full border-4 border-white shadow-2xl
-                transition-all duration-200 transform hover:scale-110 active:scale-95
-                ${isCapturing
-                                    ? 'bg-gray-500 cursor-not-allowed opacity-50'
-                                    : 'bg-red-600 hover:bg-red-700 animate-pulse-slow'
-                                }
-              `}
-                        >
-                            <div className="absolute inset-2 rounded-full bg-white"></div>
-                        </button>
+                <div className="absolute bottom-16 left-0 right-0 z-20 flex flex-col items-center gap-6">
 
-                        <div className="bg-gray-800 bg-opacity-90 px-6 py-2 rounded-lg backdrop-blur-sm">
-                            <p className="text-white text-center text-sm">
-                                Press <kbd className="px-2 py-1 bg-gray-700 rounded mx-1">SPACE</kbd> to capture
-                            </p>
-                        </div>
+                    {/* The Capture Button - Positioned to overlay the bottom area */}
+                    <button
+                        onClick={startPhotoSesssion}
+                        disabled={isCapturing}
+                        className={`
+            relative group
+            w-16 h-16 rounded-full border-[6px] border-white shadow-[0_0_30px_rgba(0,0,0,0.4)]
+            transition-all duration-300 transform hover:scale-110 active:scale-90
+            ${isCapturing ? 'bg-gray-500 cursor-not-allowed' : 'bg-red-600'}
+          `}
+                    >
+                        <div className="absolute inset-2 rounded-full border-2 border-black/10 bg-white group-hover:bg-gray-100 transition-colors" />
+                        {/* Outer Ring Animation */}
+                        {!isCapturing && (
+                            <div className="absolute -inset-4 rounded-full border-2 border-white/30 animate-ping pointer-events-none" />
+                        )}
+                    </button>
+
+                    {/* Space Hint */}
+                    <div className="px-4 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-xl">
+                        <p className="text-white text-[10px] uppercase font-black tracking-[0.2em] opacity-80">
+                            Press <span className="text-blue-400">Space</span>
+                        </p>
                     </div>
                 </div>
             )}
         </div>
-    )
+    );
+
 }
 
