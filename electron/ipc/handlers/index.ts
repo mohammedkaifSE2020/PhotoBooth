@@ -4,6 +4,7 @@ import { registerSettingsHandlers } from './SettingsHandler';
 import { registerFileHandlers } from './FileHandler';
 import { registerTemplateHandler } from './TemplateHandler';
 import { registerEmailHandler } from './EmailHandler';
+import { registerGroupHandlers } from './GroupHandler';
 
 
 export function registerIPCHandlers(): void {
@@ -14,6 +15,7 @@ export function registerIPCHandlers(): void {
   registerFileHandlers();
   registerTemplateHandler();
   registerEmailHandler();
-
+  registerGroupHandlers();
+  
   log.info('All IPC handlers registered successfully');
 }

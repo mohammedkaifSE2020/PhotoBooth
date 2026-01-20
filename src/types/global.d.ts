@@ -44,6 +44,18 @@ declare global {
       testConfig: () => Promise<boolean>;
     };
 
+    groups: {
+      getAll: () => Promise<any[]>;
+      getById: (id: number) => Promise<any>;
+      create: (name: string, description?: string, thumbnail_path?: string) => Promise<number>;
+      update: (id: number, updates: Partial<Omit<any, 'id' | 'created_at' | 'photo_count'>>) => Promise<void>;
+      delete: (id: number) => Promise<void>;
+      updatePhotoCount: (groupId: number) => Promise<void>;
+      addPhotos: (groupId: number, photoIds: number[]) => Promise<void>;
+      removePhotos: (groupId: number, photoIds: number[]) => Promise<void>;
+      getPhotos: (groupId: number) => Promise<any[]>;
+    }
+
     on: (channel: string, callback: (...args: any[]) => void) => () => void;
   }
 

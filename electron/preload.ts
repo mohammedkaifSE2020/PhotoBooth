@@ -60,6 +60,20 @@ const electronAPI = {
     testConfig: () => ipcRenderer.invoke('email:test-config'),
   },
 
+  //groups APIs
+  groups: {
+    getAll: () => ipcRenderer.invoke('groups:getAll'),
+    getById: (id: number) => ipcRenderer.invoke('groups:getById', id),
+    create: (name: string, description?: string, thumbnail_path?: string) => ipcRenderer.invoke('groups:create', name, description, thumbnail_path),
+    update: (id: number, updates: Partial<Omit<any, 'id' | 'created_at' | 'photo_count'>>) => ipcRenderer.invoke('groups:update', id, updates),
+    delete: (id: number) => ipcRenderer.invoke('groups:delete', id),
+    updatePhotoCount: (groupId: number) => ipcRenderer.invoke('groups:updatePhotoCount', groupId),
+    addPhotos: (groupId: number, photoIds: number[]) => ipcRenderer.invoke('groups:addPhotos', groupId, photoIds),
+    removePhotos: (groupId: number, photoIds: number[]) => ipcRenderer.invoke('groups:removePhotos', groupId, photoIds),
+    getPhotos: (groupId: number) => ipcRenderer.invoke('groups:getPhotos', groupId),
+  },
+
+
   // Event listeners
   on: (channel: string, callback: (...args: any[]) => void) => {
     const subscription = (_event: IpcRendererEvent, ...args: any[]) =>

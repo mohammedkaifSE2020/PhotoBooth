@@ -14,7 +14,6 @@ export function getDatabasePath(): string {
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
   }
-
   return dbPath;
 }
 
@@ -250,6 +249,21 @@ function getMigrations() {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )`
+    },
+    {
+      name: 'Layouts_and_PhotoGroups',
+      sql: `
+            ALTER TABLE photos ADD COLUMN group_id TEXT;
+            CREATE TABLE photo_groups (
+              id TEXT PRIMARY KEY,
+              name TEXT NOT NULL,
+              description TEXT,
+              photo_count INTEGER DEFAULT 0,
+              thumbnail_path TEXT,
+              created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+              updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+            CREATE INDEX idx_photos_group_id ON photos(group_id)`
     }
   ];
 }
