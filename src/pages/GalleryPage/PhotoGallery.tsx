@@ -8,18 +8,20 @@ import { usePhotoOperations, Photo } from "../../hooks/usePhotoOperations";
 import { PhotoGrid } from "./PhotoGrid";
 import { PhotoDetailsPanel } from "./PhotoDetailsPanel";
 import { getMediaUrl } from "./utils";
+import { useGroupStore } from "@/store/useGroupStore";
 
 export default function PhotoGallery() {
     const navigate = useNavigate();
     const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+    const { selectedPhotos, isSelectionMode } = useGroupStore();
 
     // Photo operations hook
-    const { 
-        photos, 
-        loading, 
-        loadPhotos, 
-        deletePhoto: deletePhotoOp, 
-        saveEditedPhoto 
+    const {
+        photos,
+        loading,
+        loadPhotos,
+        deletePhoto: deletePhotoOp,
+        saveEditedPhoto
     } = usePhotoOperations();
 
     // Filter functionality hook
@@ -119,10 +121,10 @@ export default function PhotoGallery() {
             <div className="flex-1 flex flex-col">
                 <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black/20 backdrop-blur-xl shrink-0">
                     <div />
-                    <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={loadPhotos} 
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={loadPhotos}
                         className="h-9 gap-2 hover:bg-white/5 text-slate-400 hover:text-white transition-colors"
                     >
                         <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -137,6 +139,22 @@ export default function PhotoGallery() {
                         setIsEditing(false);
                     }}
                 />
+                {isSelectionMode && selectedPhotos.length >= 2 && (
+                    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-5">
+                        <div className="bg-blue-600 px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-6 border border-white/20 backdrop-blur-md">
+                            <div className="text-white">
+                                <p className="text-[10px] uppercase font-black tracking-widest opacity-70">Ready to save</p>
+                                <p className="text-sm font-bold">{selectedPhotos.length} Photos Selected</p>
+                            </div>
+                            <button
+                                onClick={() => navigate('/groups/create')}
+                                className="bg-white text-blue-600 px-6 py-2 rounded-xl font-bold text-sm hover:bg-blue-50 transition-colors"
+                            >
+                                Create Group →
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Details & Editor Sidebar */}

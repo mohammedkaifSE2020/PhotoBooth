@@ -83,7 +83,7 @@
     "vite": "^5.0.10",
     "vite-plugin-electron": "^0.28.2",
     "wait-on": "^7.2.0",
-    "zustand": "^4.4.7"
+    "zustand": "^4.5.7"
   },
   "build": {
     "appId": "com.yourcompany.photobooth",

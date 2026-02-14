@@ -37,7 +37,7 @@ export function registerGroupHandlers(): void {
     });
 
     // Handle update group
-    ipcMain.handle("groups:update", async (_, id: number, updates: Partial<Omit<Group, "id" | "created_at" | "photo_count">>) => {
+    ipcMain.handle("groups:update", async (_, id: string, updates: Partial<Omit<Group, "id" | "created_at" | "photo_count">>) => {
         try {
             await groupsService.updateGroup(id, updates);
         } catch (error: any) {
@@ -47,7 +47,7 @@ export function registerGroupHandlers(): void {
     });
 
     // Handle delete group
-    ipcMain.handle("groups:delete", async (_, id: number) => {
+    ipcMain.handle("groups:delete", async (_, id: string) => {
         try {
             await groupsService.deleteGroup(id);
         } catch (error: any) {
@@ -57,7 +57,7 @@ export function registerGroupHandlers(): void {
     });
 
     // Handle update photo count for group
-    ipcMain.handle("groups:updatePhotoCount", async (_, groupId: number) => {
+    ipcMain.handle("groups:updatePhotoCount", async (_, groupId: string) => {
         try {
             await groupsService.updatePhotoCountForGroup(groupId);
         } catch (error: any) {
@@ -67,7 +67,7 @@ export function registerGroupHandlers(): void {
     });
 
     //add photos to group
-    ipcMain.handle("groups:addPhotos", async (_, groupId: number, photoIds: number[]) => {
+    ipcMain.handle("groups:addPhotos", async (_, groupId: string, photoIds: string[]) => {
         try {
             await groupsService.addPhotosToGroup(groupId, photoIds);
         } catch (error: any) {
@@ -77,7 +77,7 @@ export function registerGroupHandlers(): void {
     });
 
     //remove photos from group
-    ipcMain.handle("groups:removePhotos", async (_, groupId: number, photoIds: number[]) => {
+    ipcMain.handle("groups:removePhotos", async (_, groupId: string, photoIds: string[]) => {
         try {
             await groupsService.removePhotosFromGroup(groupId, photoIds);
         } catch (error: any) {
@@ -87,7 +87,7 @@ export function registerGroupHandlers(): void {
     });
 
     //get photos in group
-    ipcMain.handle("groups:getPhotos", async (_, groupId: number) => {
+    ipcMain.handle("groups:getPhotos", async (_, groupId: string) => {
         try {
             return await groupsService.getPhotosByGroupId(groupId);
         } catch (error: any) {

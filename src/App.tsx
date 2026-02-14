@@ -1,8 +1,9 @@
 import { useEffect, useState, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useLocation, Link } from 'react-router-dom'
-import { Circle, Camera } from "lucide-react";
+import { Circle, Camera, Menu } from "lucide-react";
 import { routeConfig } from '@/config/routes';
 import React from 'react';
+import Sidebar from './components/SideBar/Sidebar';
 
 function App() {
   const [isReady, setIsReady] = useState(false);
@@ -35,14 +36,25 @@ function App() {
 
 function AppContent() {
   const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="h-screen bg-[#0a0a0c] text-slate-100 flex flex-col selection:bg-blue-500/30">
       {/* 🛰️ Sleek Header */}
-      <Header currentPath={location.pathname} />
+      <Header 
+      currentPath={location.pathname} 
+      onMenuClick = {() => setIsSidebarOpen((prev)=> !prev)}
+      />
 
       {/* 🖼️ Immersive Main Content */}
       <main className="flex-1 overflow-hidden relative">
+
+        {/* 🚪 The Slide-out Sidebar */}
+        <Sidebar 
+          isOpen={isSidebarOpen} 
+          onClose={() => setIsSidebarOpen(false)} 
+          currentPath={location.pathname} 
+        />
         {/* Subtle background glow to give depth */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-1/2 bg-blue-600/5 blur-[120px] pointer-events-none" />
 
@@ -65,28 +77,24 @@ function AppContent() {
         </div>
       </main>
 
-      {/* 📊 Minimal Footer
-      <footer className="bg-gray-950/50 border-t border-white/5 px-8 py-2.5 flex justify-between items-center text-[11px] text-gray-500 font-medium uppercase tracking-widest flex-shrink-0">
-        <div className="flex gap-4">
-          <span>v1.0.0 Stable</span>
-          <span className="text-gray-700">|</span>
-          <span>Storage: 84% Free</span>
-        </div>
-        <div className="text-blue-500/50">
-          &copy; 2025 PhotoBooth Pro Ecosystem
-        </div>
-      </footer> */}
     </div>
   );
 }
 
-function Header({ currentPath }: { currentPath: string }) {
+function Header({ currentPath, onMenuClick }: { currentPath: string, onMenuClick: () => void }) {
   return (
     // Reduced height from py-4 to h-14 (56px)
     <header className="z-50 h-14 bg-gray-900/80 backdrop-blur-md border-b border-white/5 px-6 flex-shrink-0 shadow-2xl flex items-center">
       <div className="w-full max-w-[1600px] mx-auto flex items-center justify-between">
-        
-        {/* Brand & Status - More compact gap */}
+        {/* 🍔 Hamburger Button */}
+        <button 
+          onClick={onMenuClick}
+          className="p-2 -ml-2 hover:bg-white/5 rounded-lg transition-colors text-gray-400 hover:text-white"
+        >
+          <Menu className="size-6" />
+        </button>
+
+        {/* Brand */}
         <div className="flex items-center gap-3">
           <div className="flex items-center justify-center size-8 bg-blue-600 rounded-lg shadow-lg shadow-blue-600/20">
             <Camera className="size-5 text-white" />
@@ -101,22 +109,6 @@ function Header({ currentPath }: { currentPath: string }) {
             </div>
           </div>
         </div>
-
-        {/* 🧭 Symbol-Only Navigation */}
-        <nav className="flex items-center bg-gray-950/40 p-1 rounded-xl border border-white/5 gap-1">
-          {routeConfig
-            .filter((route) => route.showInNav)
-            .map((route) => (
-              <NavLink
-                key={route.key}
-                to={route.path}
-                active={currentPath === route.path}
-                icon={route.icon}
-                // We keep the label for the "title" attribute (hover tooltip)
-                label={route.label} 
-              />
-            ))}
-        </nav>
       </div>
     </header>
   );

@@ -1,4 +1,3 @@
-// src/types/electron.d.ts
 
 export {};
 
@@ -24,6 +23,7 @@ declare global {
 
     file: {
       selectDirectory: () => Promise<string | null>;
+      SelectImage: () => Promise<string | null>;
     };
 
     template: {
@@ -55,6 +55,15 @@ declare global {
       removePhotos: (groupId: number, photoIds: number[]) => Promise<void>;
       getPhotos: (groupId: number) => Promise<any[]>;
     }
+
+    layout: {
+      importFrame: (sourcePath: string, name: string) => Promise<any>;
+      getAllFrames: () => Promise<any[]>;
+      save: (data: { name: string; canvas_width: number; canvas_height: number; frame_asset_id: string; config_json: any }) => Promise<string>;
+      update: (id: string, updates: any) => Promise<boolean>;
+      delete: (id: string) => Promise<boolean>;
+      deleteFrame: (id: string) => Promise<boolean>;
+    };
 
     on: (channel: string, callback: (...args: any[]) => void) => () => void;
   }

@@ -21,7 +21,7 @@ export class GroupsService {
     //Get all groups
     async getAllGroups(): Promise<Group[]> {
         try {
-            const groups = this.db.prepare("SELECT * FROM groups").all();
+            const groups = this.db.prepare("SELECT * FROM photo_groups").all();
             //check if groups is undefined or null
             if (!groups) {
                 return [];
@@ -36,7 +36,7 @@ export class GroupsService {
     //Get group by id
     async getGroupById(id: number): Promise<Group | null> {
         try {
-            const group = this.db.prepare("SELECT * FROM groups WHERE id = ?").get(id);
+            const group = this.db.prepare("SELECT * FROM photo_groups WHERE id = ?").get(id);
             return group ? (group as Group) : null;
         }
         catch (error) {
@@ -46,10 +46,11 @@ export class GroupsService {
     }
 
     //Create a new group
-    async createGroup(name: string, description?: string, thumbnail_path?: string): Promise<number> {
+    async createGroup(name: string, description?: string, thumbnail_path?: string): Promise<string> {
         try {
-            const group = this.db.prepare("INSERT INTO groups (name, description, thumbnail_path, photo_count, created_at, updated_at) VALUES (?, ?, ?, 0, datetime('now'), datetime('now'))").run(name, description, thumbnail_path);
-            return group.lastInsertRowid as number;
+            const id = this.generateId();
+            this.db.prepare("INSERT INTO photo_groups (id, name, description, thumbnail_path, photo_count, created_at, updated_at) VALUES (?, ?, ?, ?, 0, datetime('now'), datetime('now'))").run(id, name, description, thumbnail_path);
+            return id;
         } catch (error) {
             log.error("Error creating group:", error);
             throw error;
@@ -57,7 +58,7 @@ export class GroupsService {
     }
 
     //Update a group
-    async updateGroup(id: number, updates: Partial<Omit<Group, 'id' | 'created_at' | 'photo_count'>>): Promise<void> {
+    async updateGroup(id: string, updates: Partial<Omit<Group, 'id' | 'created_at' | 'photo_count'>>): Promise<void> {
         try {
             const updateFields: string[] = [];
             const values: any[] = [];
@@ -75,7 +76,7 @@ export class GroupsService {
             }
             updateFields.push("updated_at = datetime('now')");
             values.push(id);
-            const query = `UPDATE groups SET ${updateFields.join(", ")} WHERE id = ?`;
+            const query = `UPDATE photo_groups SET ${updateFields.join(", ")} WHERE id = ?`;
             this.db.prepare(query).run(...values);
         } catch (error) {
             log.error(`Error updating group with id ${id}:`, error);
@@ -84,9 +85,9 @@ export class GroupsService {
     }
 
     //Delete a group
-    async deleteGroup(id: number): Promise<void> {
+    async deleteGroup(id: string): Promise<void> {
         try {
-            this.db.prepare("DELETE FROM groups WHERE id = ?").run(id);
+            this.db.prepare("DELETE FROM photo_groups WHERE id = ?").run(id);
         } catch (error) {
             log.error(`Error deleting group with id ${id}:`, error);
             throw error;
@@ -96,34 +97,39 @@ export class GroupsService {
     //Photos Crud operations will be here 
 
     //add photos to group
-    async addPhotosToGroup(groupId: number, photoIds: number[]): Promise<void> {
+    async addPhotosToGroup(groupId: string, photoIds: string[]): Promise<void> {
         try {
-            //validate all photoIds exist
-            const insert = this.db.prepare("INSERT INTO group_photos (group_id, photo_id) VALUES (?, ?)");
-            const insertMany = this.db.transaction((photoIds: number[]) => {
-                for (const photoId of photoIds) {
-                    insert.run(groupId, photoId);
+            const updateMany = this.db.transaction((ids: string[]) => {
+                const update = this.db.prepare("UPDATE photos SET group_id = ? WHERE id = ?");
+                for (const photoId of ids) {
+                    update.run(groupId, photoId);
                 }
             });
 
-            insertMany(photoIds);
+            updateMany(photoIds);
+
+            // Update the photo count in photo_groups table
+            await this.updatePhotoCountForGroup(groupId);
 
         } catch (error) {
-            log.error(`Error adding photos to group with id ${groupId}:`, error);
+            log.error(`Error updating photos for group ${groupId}:`, error);
             throw error;
         }
     }
 
     //remove photos from group
-    async removePhotosFromGroup(groupId: number, photoIds: number[]): Promise<void> {
+    async removePhotosFromGroup(groupId: string, photoIds: string[]): Promise<void> {
         try {
-            const deleteQuery = this.db.prepare("DELETE FROM group_photos WHERE group_id = ? AND photo_id IN (SELECT photo_id FROM group_photos WHERE group_id = ? AND photo_id IN (?))");
-            const deleteMany = this.db.transaction((photoIds: number[]) => {
-                for (const photoId of photoIds) {
-                    deleteQuery.run(groupId, groupId, photoId);
+            const updateMany = this.db.transaction((ids: string[]) => {
+                const update = this.db.prepare("UPDATE photos SET group_id = NULL WHERE id = ?");
+                for (const photoId of ids) {
+                    update.run(photoId);
                 }
             });
-            deleteMany(photoIds);
+            updateMany(photoIds);
+
+            // Update the photo count in photo_groups table
+            await this.updatePhotoCountForGroup(groupId);
         } catch (error) {
             log.error(`Error removing photos from group with id ${groupId}:`, error);
             throw error;
@@ -131,10 +137,10 @@ export class GroupsService {
     }
 
     //get photos by group id
-    async getPhotosByGroupId(groupId: number): Promise<number[]> {
+    async getPhotosByGroupId(groupId: string): Promise<string[]> {
         try {
-            const photos = this.db.prepare("SELECT photo_id FROM group_photos WHERE group_id = ?").all(groupId);
-            return photos.map((p: any) => p.photo_id);
+            const photos = this.db.prepare("SELECT id FROM photos WHERE group_id = ?").all(groupId);
+            return photos.map((p: any) => p.id);
         } catch (error) {
             log.error(`Error getting photos by group id ${groupId}:`, error);
             throw error;
@@ -142,17 +148,17 @@ export class GroupsService {
     }
 
     //update photo count for a group
-    async updatePhotoCountForGroup(groupId: number): Promise<void> {
+    async updatePhotoCountForGroup(groupId: string): Promise<void> {
         try {
             // Cast the result to our interface
             const result = this.db
-                .prepare("SELECT COUNT(*) as count FROM group_photos WHERE group_id = ?")
+                .prepare("SELECT COUNT(*) as count FROM photos WHERE group_id = ?")
                 .get(groupId) as CountResult | undefined;
 
             // Ensure result exists before accessing .count
             if (result) {
                 this.db
-                    .prepare("UPDATE groups SET photo_count = ? WHERE id = ?")
+                    .prepare("UPDATE photo_groups SET photo_count = ? WHERE id = ?")
                     .run(result.count, groupId);
             }
         } catch (error) {
@@ -163,5 +169,10 @@ export class GroupsService {
         }
     }
 
-    
+    //Generate a unique ID
+    private generateId(): string {
+        return `group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    }
+
+
 }

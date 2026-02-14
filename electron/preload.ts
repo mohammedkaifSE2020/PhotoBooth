@@ -31,6 +31,7 @@ const electronAPI = {
   // File System APIs
   file: {
     selectDirectory: () => ipcRenderer.invoke('file:select-directory'),
+    SelectImage: () => ipcRenderer.invoke('file:select-image'),
   },
 
   // Template APIs
@@ -73,6 +74,15 @@ const electronAPI = {
     getPhotos: (groupId: number) => ipcRenderer.invoke('groups:getPhotos', groupId),
   },
 
+  // Layout APIs
+  layout: {
+    importFrame: (sourcePath: string, name: string) => ipcRenderer.invoke('layout:import-frame', sourcePath, name),
+    getAllFrames: () => ipcRenderer.invoke('layout:get-all-frames'),
+    save: (data: { name: string; canvas_width: number; canvas_height: number; frame_asset_id: string; config_json: any }) => ipcRenderer.invoke('layout:save', data),
+    update: (id: string, updates: any) => ipcRenderer.invoke('layout:update', id, updates),
+    delete: (id: string) => ipcRenderer.invoke('layout:delete', id),
+    deleteFrame: (id: string) => ipcRenderer.invoke('layout:delete-frame', id),
+  },
 
   // Event listeners
   on: (channel: string, callback: (...args: any[]) => void) => {

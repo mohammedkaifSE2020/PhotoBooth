@@ -264,6 +264,49 @@ function getMigrations() {
               updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             );
             CREATE INDEX idx_photos_group_id ON photos(group_id)`
+    },
+    {
+      name: 'Frames_and_Canvas_Layouts',
+      sql: `
+    -- 1. Store the raw PNG/Image assets imported by the user
+    CREATE TABLE frame_assets (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      filepath TEXT NOT NULL,
+      width INTEGER,
+      height INTEGER,
+      aspect_ratio REAL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+
+    -- 2. Store the saved workspace configurations
+    CREATE TABLE layouts (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      
+      -- Dimensions of the total workspace
+      canvas_width INTEGER NOT NULL,
+      canvas_height INTEGER NOT NULL,
+      
+      -- Link to the frame asset used in this layout
+      frame_asset_id TEXT,
+      
+      -- The "Magic" Column: Stores a JSON array of photo positions, scales, and IDs
+      -- Example: [{"photoId": "123", "x": 50, "y": 50, "w": 200, "h": 150, "rotation": 0}]
+      config_json TEXT NOT NULL,
+      
+      -- Path to a preview/thumbnail of the saved layout
+      preview_path TEXT,
+      
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      
+      FOREIGN KEY (frame_asset_id) REFERENCES frame_assets(id) ON DELETE SET NULL
+    );
+
+    -- 3. Indexing for faster lookups
+    CREATE INDEX idx_layouts_frame_id ON layouts(frame_asset_id);
+  `
     }
   ];
 }
